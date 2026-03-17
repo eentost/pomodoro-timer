@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pomodoro-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - WORK_DURATION=25
+      - SHORT_BREAK=5
+      - LONG_BREAK=15
+    volumes:
+      - ./backend:/app
+      - pomodoro-data:/app/data
+    restart: unless-stopped
+    networks:
+      - pomodoro-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pomodoro-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: unless-stopped
+    networks:
+      - pomodoro-network
+
+volumes:
+  pomodoro-data:
+    driver: local
+
+networks:
+  pomodoro-network:
+    driver: bridge
